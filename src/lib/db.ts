@@ -1,4 +1,4 @@
-import { createServerSupabase } from "@/lib/supabase/server";
+import { createServerSupabase } from "./supabase/server";
 
 export async function saveAnalysis(userId: string, data: {
   fileName: string; score: number; strengths: string[];

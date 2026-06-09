@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
-import { createServerSupabase } from "@/lib/supabase/server";
+import { createServerSupabase } from "../../../lib/supabase/server";
 
 const client = new OpenAI({
   apiKey: process.env.DEEPSEEK_API_KEY || "sk-placeholder",
