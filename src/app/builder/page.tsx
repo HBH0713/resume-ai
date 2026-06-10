@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { Button } from "../../components/ui/button";
 import { Card, CardContent } from "../../components/ui/card";
-import { Plus, Trash2, Download, ChevronUp, ChevronDown, Eye, EyeOff } from "lucide-react";
+import Link from "next/link";
+import { Plus, Trash2, Download, ChevronUp, ChevronDown, ArrowLeft } from "lucide-react";
 
 type Template = "blue" | "dark" | "green";
 type FontChoice = "sans" | "serif" | "mono";
