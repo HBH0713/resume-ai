@@ -16,23 +16,28 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "请上传 PDF 文件" }, { status: 400 });
     }
 
-    // Call Python FastAPI for PDF text extraction (pdfplumber handles Chinese well)
+    // Call Python FastAPI for PDF text extraction via raw HTTP (bypass Windows proxy)
     let pdfText = "";
     try {
-      const pythonForm = new FormData();
-      pythonForm.append("file", file);
-      const pyRes = await fetch("http://127.0.0.1:8000/api/extract-pdf", {
-        method: "POST",
-        body: pythonForm,
+      const http = await import("http");
+      const arrayBuf = await file.arrayBuffer();
+      const boundary = "----FormBoundary" + Math.random().toString(36).slice(2);
+      const hdr = `--${boundary}\r\nContent-Disposition: form-data; name="file"; filename="${file.name}"\r\nContent-Type: application/pdf\r\n\r\n`;
+      const ftr = `\r\n--${boundary}--\r\n`;
+      const body = Buffer.concat([Buffer.from(hdr), Buffer.from(arrayBuf), Buffer.from(ftr)]);
+
+      const pyData: any = await new Promise((resolve, reject) => {
+        const r = http.request({
+          hostname: "127.0.0.1", port: 8000, path: "/api/extract-pdf", method: "POST",
+          headers: { "Content-Type": `multipart/form-data; boundary=${boundary}`, "Content-Length": String(body.length) },
+        }, (res) => { let d = ""; res.on("data", (c: any) => d += c); res.on("end", () => { try { resolve(JSON.parse(d)); } catch { reject(new Error(d)); } }); });
+        r.on("error", reject); r.write(body); r.end();
       });
-      if (!pyRes.ok) {
-        const pyErr = await pyRes.json();
-        return NextResponse.json({ error: pyErr.detail || "PDF 解析失败" }, { status: 400 });
-      }
-      const pyData = await pyRes.json();
-      pdfText = pyData.text.slice(0, 5000);
+
+      if (pyData.detail) return NextResponse.json({ error: pyData.detail }, { status: 400 });
+      pdfText = (pyData.text || "").slice(0, 5000);
     } catch (e: any) {
-      return NextResponse.json({ error: `Python 服务连接失败，请确认 API 已启动` }, { status: 500 });
+      return NextResponse.json({ error: `Python 服务连接失败: ${e.message}` }, { status: 500 });
     }
 
     if (!pdfText.trim()) {
