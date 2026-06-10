@@ -1,5 +1,5 @@
 import { Card, CardContent } from "../../components/ui/card";
-import { TrendingUp, Calendar } from "lucide-react";
+import { TrendingUp, Calendar, ArrowLeft } from "lucide-react";
 import { getAnalyses } from "../../lib/db";
 import { createServerSupabase } from "../../lib/supabase/server";
 import Link from "next/link";

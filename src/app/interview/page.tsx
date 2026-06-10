@@ -1,5 +1,6 @@
+import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card";
-import { MessageSquare, Calendar } from "lucide-react";
+import { MessageSquare, Calendar, ArrowLeft } from "lucide-react";
 import { createServerSupabase } from "../../lib/supabase/server";
 
 export default async function InterviewPage() {
