@@ -92,7 +92,7 @@ ${pdfText}`;
     } catch (e) { console.error("Save failed:", e); }
 
     return NextResponse.json(result);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Analysis error:", error);
     return NextResponse.json(
       { error: error.message || "分析失败，请重试" },
