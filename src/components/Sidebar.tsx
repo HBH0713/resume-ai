@@ -10,6 +10,7 @@ import { FileText, Sparkles, MessageSquare, LayoutDashboard, History, LogOut } f
 const links = [
   { href: "/dashboard", label: "概览", icon: LayoutDashboard },
   { href: "/analyze", label: "分析简历", icon: Sparkles },
+  { href: "/builder", label: "编辑简历", icon: FileText },
   { href: "/interview", label: "面试题库", icon: MessageSquare },
   { href: "/history", label: "历史记录", icon: History },
 ];
