@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import { Button } from "../../components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card";
-import { Target, AlertCircle, Lightbulb, MessageSquare, Briefcase, TrendingUp } from "lucide-react";
+import Link from "next/link";
+import { Target, AlertCircle, Lightbulb, MessageSquare, Briefcase, TrendingUp, ArrowLeft } from "lucide-react";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 interface AnalysisResult {
