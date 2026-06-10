@@ -108,7 +108,7 @@ export default function BuilderPage() {
       <div className="w-[500px] overflow-y-auto p-6 border-r bg-white">
         {/* Toolbar */}
         <div className="flex items-center justify-between mb-5 flex-wrap gap-2">
-          <h1 className="text-lg font-bold">编辑简历</h1>
+          <Link href="/dashboard" className="inline-flex items-center gap-1 text-xs text-slate-400 hover:text-slate-600"><ArrowLeft className="w-3 h-3" />返回</Link><h1 className="text-lg font-bold">编辑简历</h1>
           <div className="flex gap-2">
             <Button onClick={handlePrint} size="sm" style={{background:t.primary}}><Download className="w-3.5 h-3.5 mr-1" />导出 PDF</Button>
             <button onClick={() => setShowTips(!showTips)} className="text-xs text-slate-400 hover:text-slate-600">{showTips ? "隐藏提示" : "显示提示"}</button>

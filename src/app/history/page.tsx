@@ -11,6 +11,7 @@ export default async function HistoryPage() {
 
   return (
     <div className="p-8">
+      <Link href="/dashboard" className="inline-flex items-center gap-1 text-sm text-slate-400 hover:text-slate-600 mb-4"><ArrowLeft className="w-3 h-3" />返回</Link>
       <h1 className="text-2xl font-bold mb-2">历史记录</h1>
       <p className="text-muted-foreground mb-8">所有简历分析记录，点击查看详情</p>
       {analyses.length === 0 ? (

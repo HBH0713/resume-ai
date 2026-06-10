@@ -4,7 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "../../components/ui/button";
 import { Card, CardContent } from "../../components/ui/card";
-import { Upload, FileText, Sparkles } from "lucide-react";
+import { Upload, FileText, Sparkles, ArrowLeft } from "lucide-react";
+import Link from "next/link";
 
 export default function AnalyzePage() {
   const [file, setFile] = useState<File | null>(null);
@@ -31,6 +32,7 @@ export default function AnalyzePage() {
 
   return (
     <div className="p-8 max-w-3xl mx-auto">
+      <Link href="/dashboard" className="inline-flex items-center gap-1 text-sm text-slate-400 hover:text-slate-600 mb-4"><ArrowLeft className="w-3 h-3" />返回</Link>
       <h1 className="text-2xl font-bold mb-2">分析简历</h1>
       <p className="text-muted-foreground mb-8">上传 PDF 简历，AI 自动提取文字并分析</p>
 

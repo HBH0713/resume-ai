@@ -19,6 +19,7 @@ export default async function InterviewPage() {
 
   return (
     <div className="p-8 max-w-4xl">
+      <Link href="/dashboard" className="inline-flex items-center gap-1 text-sm text-slate-400 hover:text-slate-600 mb-4"><ArrowLeft className="w-3 h-3" />返回</Link>
       <h1 className="text-2xl font-bold mb-2">面试题库</h1>
       <p className="text-muted-foreground mb-8">根据你的简历自动生成的针对性面试题</p>
 

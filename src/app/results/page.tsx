@@ -54,6 +54,7 @@ export default function ResultsPage() {
 
   return (
     <div className="p-8 max-w-5xl mx-auto space-y-6">
+      <Link href="/dashboard" className="inline-flex items-center gap-1 text-sm text-slate-400 hover:text-slate-600"><ArrowLeft className="w-3 h-3" />返回</Link>
       <h1 className="text-2xl font-bold">分析结果</h1>
 
       {result.score != null && (
