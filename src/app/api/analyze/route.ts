@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
-import pdfParse from "pdf-parse";
+import { PDFParse } from "pdf-parse";
 import { createServerSupabase } from "../../../lib/supabase/server";
 
 const client = new OpenAI({
@@ -17,11 +17,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "请上传 PDF 文件" }, { status: 400 });
     }
 
-    // Extract PDF text using pdf-parse (works on Vercel, no Python dependency)
+    // Extract PDF text using pdf-parse v2 (works on Vercel, no Python dependency)
     let pdfText = "";
     try {
       const arrayBuf = await file.arrayBuffer();
-      const pdfData = await pdfParse(Buffer.from(arrayBuf));
+      const parser = new PDFParse({ data: arrayBuf });
+      const pdfData = await parser.getText();
       pdfText = (pdfData.text || "").slice(0, 5000);
     } catch (e: any) {
       return NextResponse.json({ error: `PDF 解析失败: ${e.message}` }, { status: 500 });
