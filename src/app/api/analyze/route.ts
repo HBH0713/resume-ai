@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
-import { PDFParse } from "pdf-parse";
+import { getDocument } from "pdfjs-dist/legacy/build/pdf.mjs";
 import { createServerSupabase } from "../../../lib/supabase/server";
 
 const client = new OpenAI({
@@ -17,13 +17,22 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "请上传 PDF 文件" }, { status: 400 });
     }
 
-    // Extract PDF text using pdf-parse v2 (works on Vercel, no Python dependency)
+    // Extract PDF text using pdfjs-dist directly (pure JS, works on Vercel)
     let pdfText = "";
     try {
       const arrayBuf = await file.arrayBuffer();
-      const parser = new PDFParse({ data: arrayBuf });
-      const pdfData = await parser.getText();
-      pdfText = (pdfData.text || "").slice(0, 5000);
+      const doc = await getDocument({
+        data: new Uint8Array(arrayBuf),
+        disableWorker: true,
+        isEvalSupported: false,
+      }).promise;
+      const pages: string[] = [];
+      for (let i = 1; i <= doc.numPages; i++) {
+        const page = await doc.getPage(i);
+        const content = await page.getTextContent();
+        pages.push(content.items.map((item: any) => item.str).join(" "));
+      }
+      pdfText = pages.join("\n").slice(0, 5000);
     } catch (e: any) {
       return NextResponse.json({ error: `PDF 解析失败: ${e.message}` }, { status: 500 });
     }
