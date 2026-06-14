@@ -1,34 +1,69 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "../../lib/supabase/client";
 import { Button } from "../../components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../../components/ui/card";
-import { FileText } from "lucide-react";
+import { FileText, Loader2 } from "lucide-react";
 
-export default function LoginPage() {
+function LoginFormInner() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
   const router = useRouter();
-  const supabase = createClient();
+
+  let redirect = "/dashboard";
+  try {
+    const searchParams = useSearchParams();
+    redirect = searchParams.get("redirect") || "/dashboard";
+  } catch {
+    // useSearchParams may throw during SSR, default to /dashboard
+  }
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true); setError("");
-    const { error: err } = await supabase.auth.signInWithPassword({ email, password });
-    if (err) setError(err.message); else router.push("/dashboard");
-    setLoading(false);
+    if (loading) return;
+    setLoading(true);
+    setError("");
+    setMessage("");
+
+    try {
+      const supabase = createClient();
+      const { error: err } = await supabase.auth.signInWithPassword({ email, password });
+      if (err) {
+        setError(err.message);
+      } else {
+        router.push(redirect);
+      }
+    } catch (e: any) {
+      setError(e.message || "登录失败，请重试");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSignup = async () => {
-    setLoading(true); setError(""); setMessage("");
-    const { error: err } = await supabase.auth.signUp({ email, password });
-    if (err) setError(err.message); else setMessage("注册成功！请检查邮箱确认链接。");
-    setLoading(false);
+    if (loading) return;
+    setLoading(true);
+    setError("");
+    setMessage("");
+
+    try {
+      const supabase = createClient();
+      const { error: err } = await supabase.auth.signUp({ email, password });
+      if (err) {
+        setError(err.message);
+      } else {
+        setMessage("注册成功！请检查邮箱确认链接。");
+      }
+    } catch (e: any) {
+      setError(e.message || "注册失败，请重试");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -74,7 +109,7 @@ export default function LoginPage() {
               {error && <p className="text-red-500 text-sm bg-red-50 rounded-lg p-2.5">{error}</p>}
               {message && <p className="text-green-600 text-sm bg-green-50 rounded-lg p-2.5">{message}</p>}
               <Button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl py-2.5" disabled={loading}>
-                {loading ? "登录中..." : "登录"}
+                {loading ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />登录中...</> : "登录"}
               </Button>
             </form>
             <div className="flex gap-2 pt-2">
@@ -84,5 +119,20 @@ export default function LoginPage() {
         </Card>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-indigo-50">
+        <div className="text-center">
+          <Loader2 className="w-8 h-8 animate-spin text-indigo-500 mx-auto mb-3" />
+          <p className="text-slate-400 text-sm">加载中...</p>
+        </div>
+      </div>
+    }>
+      <LoginFormInner />
+    </Suspense>
   );
 }

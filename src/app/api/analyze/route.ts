@@ -1,12 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
 import { PdfReader } from "pdfreader";
+import { createHash } from "crypto";
 import { createServerSupabase } from "../../../lib/supabase/server";
 
 const client = new OpenAI({
   apiKey: process.env.DEEPSEEK_API_KEY || "sk-placeholder",
   baseURL: process.env.DEEPSEEK_BASE_URL || "https://api.deepseek.com",
 });
+
+// Content-hash cache: same resume → same result, no repeated API calls
+const analysisCache = new Map<string, any>();
 
 export async function POST(req: NextRequest) {
   try {
@@ -39,6 +43,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "PDF 内容为空" }, { status: 400 });
     }
 
+    // Content-hash cache: skip API call if same resume text was already analyzed
+    const contentHash = createHash("sha256").update(pdfText).digest("hex");
+    if (analysisCache.has(contentHash)) {
+      const cached = analysisCache.get(contentHash);
+      return NextResponse.json({ ...cached, cached: true });
+    }
+
     // AI Analysis
     const prompt = `你是资深 HR 和简历优化专家。仔细阅读以下简历，必须输出完整 JSON，每个字段都不能是空数组：
 
@@ -64,7 +75,8 @@ ${pdfText}`;
       model: process.env.DEEPSEEK_MODEL || "deepseek-chat",
       messages: [{ role: "user", content: prompt }],
       response_format: { type: "json_object" },
-      temperature: 0.3,
+      temperature: 0,
+      seed: 42,
       max_tokens: 3000,
     });
 
@@ -73,12 +85,16 @@ ${pdfText}`;
 
     const result = { text: pdfText.slice(0, 500), ...analysis };
 
+    // Cache the result for future identical requests
+    analysisCache.set(contentHash, result);
+
     // Save to DB if user is logged in
+    let saved = false;
     try {
       const supabase = await createServerSupabase();
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
-        await supabase.from("analyses").insert({
+        const { error: dbError } = await supabase.from("analyses").insert({
           user_id: user.id,
           file_name: file.name,
           score: analysis.score || 0,
@@ -88,10 +104,17 @@ ${pdfText}`;
           suggestions: analysis.suggestions || [],
           interview_questions: analysis.interviewQuestions || [],
         });
+        if (dbError) {
+          console.error("DB insert error:", dbError);
+        } else {
+          saved = true;
+        }
       }
-    } catch (e) { console.error("Save failed:", e); }
+    } catch (e) {
+      console.error("Save failed:", e);
+    }
 
-    return NextResponse.json(result);
+    return NextResponse.json({ ...result, saved });
   } catch (error: unknown) {
     console.error("Analysis error:", error);
     return NextResponse.json(
