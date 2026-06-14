@@ -15,13 +15,8 @@ function LoginFormInner() {
   const [message, setMessage] = useState("");
   const router = useRouter();
 
-  let redirect = "/dashboard";
-  try {
-    const searchParams = useSearchParams();
-    redirect = searchParams.get("redirect") || "/dashboard";
-  } catch {
-    // useSearchParams may throw during SSR, default to /dashboard
-  }
+  const searchParams = useSearchParams();
+  const redirect = searchParams?.get("redirect") || "/dashboard";
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
